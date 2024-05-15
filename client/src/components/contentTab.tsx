@@ -18,8 +18,12 @@ const ContentTab = ({ data, selected }: ContentTapProps) => {
       label: <Link to={`/problems/${data.problemId}`}>DESCRIPTION</Link>,
     },
     {
-      key: TabKeys.SUBMIT,
+      key: TabKeys.SUBMISSION,
       label: <Link to="submit">SUBMIT</Link>,
+    },
+    {
+      key: TabKeys.STATUS,
+      label: <Link to={`/status?problemId=${data.problemId}`}>STATUS</Link>,
     },
   ];
 

@@ -1,6 +1,7 @@
 const TabKeys = {
   DESCRIPTION: "description",
-  SUBMIT: "submit",
+  SUBMISSION: "submission",
+  STATUS: "status",
 } as const;
 
 export const findTabKey = (

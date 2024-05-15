@@ -9,14 +9,14 @@ const BasicInfoForm = () => {
         rules={[{ required: true, message: "Please input!" }]}
         wrapperCol={{ span: 5 }}
       >
-        <Input />
+        <Input size="large" />
       </Form.Item>
       <Form.Item
         label="Problem Name"
         name="problemName"
         rules={[{ required: true, message: "Please input!" }]}
       >
-        <Input />
+        <Input size="large" />
       </Form.Item>
 
       <Form.Item

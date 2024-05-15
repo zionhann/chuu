@@ -22,6 +22,10 @@ const BaseLayout = ({ pageKey, children }: BaseLayoutProps) => {
       key: PageKeys.PROBLEMS,
       label: <Link to="/problems">PROBLEMS</Link>,
     },
+    {
+      key: PageKeys.STATUS,
+      label: <Link to="/status">STATUS</Link>,
+    },
   ];
 
   return (

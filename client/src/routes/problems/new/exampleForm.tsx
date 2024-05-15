@@ -35,14 +35,15 @@ const ExampleForm = () => {
               >
                 <Form.Item
                   label="Name"
-                  name={[field.name, "name"]}
-                  rules={[{ required: true, message: "Please input!" }]}
+                  name={[field.name, "number"]}
+                  initialValue={field.name + 1}
+                  hidden
                 >
                   <Input />
                 </Form.Item>
 
                 <Form.Item label="Inputs">
-                  <Form.List name={[field.name, "inputs"]}>
+                  <Form.List name={[field.name, "inputs"]} initialValue={[]}>
                     {(subFields, subOpt) => (
                       <div
                         style={{
@@ -59,6 +60,7 @@ const ExampleForm = () => {
                               rules={[
                                 { required: true, message: "Please input!" },
                               ]}
+                              initialValue={""}
                             >
                               <Input placeholder="input" />
                             </Form.Item>
@@ -86,6 +88,7 @@ const ExampleForm = () => {
                   label="Output"
                   name={[field.name, "output"]}
                   rules={[{ required: true, message: "Please input!" }]}
+                  initialValue={""}
                 >
                   <Input.TextArea style={{ resize: "none" }} rows={3} />
                 </Form.Item>
