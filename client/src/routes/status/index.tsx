@@ -23,7 +23,7 @@ const VerdictColours: { [key in VerdictType]: string } = {
 interface SubmissionStatusDataType extends DataType {
   submissionId: number;
   submissionDate: string;
-  username: string;
+  author: string;
   problemId: string;
   lang: string;
   verdict: VerdictType;
@@ -41,9 +41,9 @@ const columns: TableProps<SubmissionStatusDataType>["columns"] = [
     key: "submissionDate",
   },
   {
-    title: "User",
-    dataIndex: "username",
-    key: "username",
+    title: "Author",
+    dataIndex: "author",
+    key: "author",
   },
   {
     title: "Problem",
@@ -75,7 +75,7 @@ const dataSource: SubmissionStatusDataType[] = [
     key: "1",
     submissionId: 4,
     submissionDate: "2021-09-01 12:00:00",
-    username: "user1",
+    author: "user1",
     problemId: "J001",
     lang: "C++",
     verdict: "Accepted",
@@ -84,7 +84,7 @@ const dataSource: SubmissionStatusDataType[] = [
     key: "2",
     submissionId: 3,
     submissionDate: "2021-09-01 12:00:00",
-    username: "user2",
+    author: "user2",
     problemId: "J002",
     lang: "Java",
     verdict: "Wrong answer",
@@ -93,7 +93,7 @@ const dataSource: SubmissionStatusDataType[] = [
     key: "3",
     submissionId: 2,
     submissionDate: "2021-09-01 12:00:00",
-    username: "user3",
+    author: "user3",
     problemId: "J003",
     lang: "Java",
     verdict: "Runtime error",
@@ -102,7 +102,7 @@ const dataSource: SubmissionStatusDataType[] = [
     key: "4",
     submissionId: 1,
     submissionDate: "2021-09-01 12:00:00",
-    username: "user4",
+    author: "user4",
     problemId: "J004",
     lang: "C++",
     verdict: "Running",

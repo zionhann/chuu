@@ -1,4 +1,4 @@
-import { Button, Divider, Flex, Form, Select, Typography } from "antd";
+import { Button, Divider, Flex, Form, Input, Select, Typography } from "antd";
 import Title from "antd/es/typography/Title";
 import { useOutletContext } from "react-router-dom";
 import { ProblemDetailPageData } from "../loader";
@@ -33,6 +33,14 @@ const SolutionSubmitTab = () => {
       <Divider />
 
       <Form onFinish={onFinish} className="flex flex-col" layout="vertical">
+        <Form.Item
+          label="Author"
+          name="author"
+          wrapperCol={{ span: 5 }}
+          rules={[{ required: true, message: "Please input!" }]}
+        >
+          <Input placeholder="Name(ID Number)" />
+        </Form.Item>
         <Form.Item
           label="Language"
           name="language"
