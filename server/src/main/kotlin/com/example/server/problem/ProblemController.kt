@@ -1,8 +1,11 @@
 package com.example.server.problem
 
+import com.example.server.common.BaseApiResponse
 import com.example.server.problem.request.ProblemRequest
+import com.example.server.problem.response.ProblemResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -19,5 +22,11 @@ class ProblemController(
     ): ResponseEntity<Unit> {
         problemService.createProblem(problemRequest)
         return ResponseEntity.status(HttpStatus.CREATED).build()
+    }
+
+    @GetMapping
+    fun getProblems(): BaseApiResponse<ProblemResponse.ProblemList> {
+        val problems = problemService.getProblems()
+        return BaseApiResponse(problems)
     }
 }
