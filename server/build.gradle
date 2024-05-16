@@ -7,6 +7,8 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.9.23'
     id 'org.jetbrains.kotlin.plugin.spring' version '1.9.23'
     id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.23'
+    id 'org.jlleitschuh.gradle.ktlint' version '12.1.1'
+    id "org.jetbrains.kotlin.plugin.allopen" version "1.9.24"
 }
 
 group = 'com.example'
@@ -28,6 +30,12 @@ repositories {
 
 ext {
     set('snippetsDir', file("build/generated-snippets"))
+}
+
+allOpen {
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.Embeddable")
+    annotation("jakarta.persistence.MappedSuperclass")
 }
 
 dependencies {
