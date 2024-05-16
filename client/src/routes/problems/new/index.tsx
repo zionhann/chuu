@@ -18,7 +18,7 @@ const ProblemAddPage = () => {
       alert("Problem added successfully!");
       navigate("/problems");
     } catch (err) {
-      log.error(err);
+      log.error("POST /problems", err);
     }
   };
 

@@ -1,12 +1,12 @@
 const log = {
-  info: (message: unknown) => {
+  info: (label: string, message: unknown) => {
     if (import.meta.env.DEV) {
-      console.log(message);
+      console.log(label, message);
     }
   },
-  error: (message: unknown) => {
+  error: (label: string, message: unknown) => {
     if (import.meta.env.DEV) {
-      console.error(message);
+      console.error(label, message);
     }
   },
 };

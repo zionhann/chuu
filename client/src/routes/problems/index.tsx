@@ -9,44 +9,34 @@ import React, { useEffect } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 
 interface ProblemListDataType extends DataType {
-  problemId: string;
+  problemCode: string;
   problemName: string;
 }
 
 const columns: TableProps<ProblemListDataType>["columns"] = [
   {
     title: "#",
-    dataIndex: "problemId",
-    key: "problemId",
+    dataIndex: "problemCode",
+    key: "problemCode",
   },
   {
     title: "Name",
     dataIndex: "problemName",
     key: "problemName",
-    render: (name, { problemId }) => <Link to={`${problemId}`}>{name}</Link>,
-  },
-];
-
-const dataSource: ProblemListDataType[] = [
-  {
-    key: "1",
-    problemId: "J001",
-    problemName: "Hello World",
-  },
-  {
-    key: "2",
-    problemId: "J002",
-    problemName: "A + B",
-  },
-  {
-    key: "3",
-    problemId: "J003",
-    problemName: "A - B",
+    render: (name, { problemCode }) => (
+      <Link to={`${problemCode}`}>{name}</Link>
+    ),
   },
 ];
 
 const ProblemListPage = () => {
-  const data = useLoaderData() as ProblemListResponse[];
+  const res = useLoaderData() as ProblemListResponse;
+  const dataSource: ProblemListDataType[] = res.data.map((data, index) => {
+    return {
+      key: index.toString(),
+      ...data,
+    };
+  });
   const setCurrentPage = useOutletContext() as React.Dispatch<
     React.SetStateAction<(typeof PageKeys)[keyof typeof PageKeys]>
   >;

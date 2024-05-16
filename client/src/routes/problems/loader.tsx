@@ -1,18 +1,21 @@
+import axiosInstance from "../../apis/axios";
+import log from "../../utils/log";
+
 export interface ProblemListResponse {
-  problemId: string;
-  problemName: string;
+  data: {
+    problemCode: string;
+    problemName: string;
+  }[];
 }
 
-const Loader = async (): Promise<Array<ProblemListResponse>> => {
-  const mockres = {
-    data: [
-      {
-        problemId: "J001",
-        problemName: "Hello World",
-      },
-    ],
-  };
-  return mockres.data;
+const Loader = async () => {
+  try {
+    const res: ProblemListResponse = await axiosInstance.get("/problems");
+    log.info("GET /problems", res);
+    return res;
+  } catch (err) {
+    log.error("GET /problems", err);
+  }
 };
 
 export default Loader;
