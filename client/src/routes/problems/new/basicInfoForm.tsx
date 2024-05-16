@@ -4,8 +4,8 @@ const BasicInfoForm = () => {
   return (
     <>
       <Form.Item
-        label="Problem ID"
-        name="problemId"
+        label="Problem Code"
+        name="code"
         rules={[{ required: true, message: "Please input!" }]}
         wrapperCol={{ span: 5 }}
       >
@@ -13,7 +13,7 @@ const BasicInfoForm = () => {
       </Form.Item>
       <Form.Item
         label="Problem Name"
-        name="problemName"
+        name="name"
         rules={[{ required: true, message: "Please input!" }]}
       >
         <Input size="large" />
@@ -29,7 +29,7 @@ const BasicInfoForm = () => {
 
       <Form.Item
         label="Input"
-        name="input"
+        name="inputDescription"
         rules={[{ required: true, message: "Please input!" }]}
       >
         <Input.TextArea style={{ resize: "none" }} rows={3} />
@@ -37,7 +37,7 @@ const BasicInfoForm = () => {
 
       <Form.Item
         label="Output"
-        name="output"
+        name="outputDescription"
         rules={[{ required: true, message: "Please input!" }]}
       >
         <Input.TextArea style={{ resize: "none" }} rows={3} />

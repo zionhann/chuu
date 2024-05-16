@@ -33,17 +33,8 @@ const ExampleForm = () => {
                   />
                 }
               >
-                <Form.Item
-                  label="Name"
-                  name={[field.name, "number"]}
-                  initialValue={field.name + 1}
-                  hidden
-                >
-                  <Input />
-                </Form.Item>
-
                 <Form.Item label="Inputs">
-                  <Form.List name={[field.name, "inputs"]} initialValue={[]}>
+                  <Form.List name={[field.name, "input"]} initialValue={[]}>
                     {(subFields, subOpt) => (
                       <div
                         style={{

@@ -33,7 +33,7 @@ class ProblemService(
     }
 
     fun getProblems(): List<ProblemResponse.ProblemList> {
-        val problems = problemRepository.findAll().sortedBy { it.code }
+        val problems = problemRepository.findAll().sortedByDescending { it.code }
         return problems.map { problem ->
             ProblemResponse.ProblemList(
                 problemCode = problem.code,
