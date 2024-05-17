@@ -15,7 +15,7 @@ const ContentTab = ({ data, selected }: ContentTapProps) => {
   const tabs: Required<MenuProps>["items"][number][] = [
     {
       key: TabKeys.DESCRIPTION,
-      label: <Link to={`/problems/${data.problemId}`}>DESCRIPTION</Link>,
+      label: <Link to={`/problems/${data.problemNumber}`}>DESCRIPTION</Link>,
     },
     {
       key: TabKeys.SUBMISSION,
@@ -23,7 +23,7 @@ const ContentTab = ({ data, selected }: ContentTapProps) => {
     },
     {
       key: TabKeys.STATUS,
-      label: <Link to={`/status?problemId=${data.problemId}`}>STATUS</Link>,
+      label: <Link to={`/status?problemId=${data.problemNumber}`}>STATUS</Link>,
     },
   ];
 

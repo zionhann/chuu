@@ -3,7 +3,7 @@ import log from "../../utils/log";
 
 export interface ProblemListResponse {
   data: {
-    problemCode: string;
+    problemNumber: string;
     problemName: string;
   }[];
 }

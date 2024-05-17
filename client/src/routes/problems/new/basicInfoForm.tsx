@@ -4,8 +4,8 @@ const BasicInfoForm = () => {
   return (
     <>
       <Form.Item
-        label="Problem Code"
-        name="code"
+        label="Problem Number"
+        name="number"
         rules={[{ required: true, message: "Please input!" }]}
         wrapperCol={{ span: 5 }}
       >

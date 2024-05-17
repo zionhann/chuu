@@ -26,16 +26,16 @@ const Router = createBrowserRouter([
         element: <ProblemListPage />,
       },
       {
-        path: "/problems/:problemId",
+        path: "/problems/:problemNumber",
         loader: problemDetailLoader,
         element: <ProblemDetailPage />,
         children: [
           {
-            path: "/problems/:problemId",
+            path: "/problems/:problemNumber",
             element: <ProblemDescriptionTab />,
           },
           {
-            path: "/problems/:problemId/submit",
+            path: "/problems/:problemNumber/submit",
             element: <SolutionSubmitTab />,
           },
         ],

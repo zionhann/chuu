@@ -7,7 +7,7 @@ export default function ProblemDetailPage() {
   return (
     <div className="pt-12">
       <h1>
-        {problemDetail.problemId}. {problemDetail.problemName}
+        {problemDetail.problemNumber}. {problemDetail.problemName}
       </h1>
       <h2>문제 설명</h2>
       {problemDetail.description}

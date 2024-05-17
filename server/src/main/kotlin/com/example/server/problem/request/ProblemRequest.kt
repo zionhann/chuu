@@ -1,15 +1,12 @@
 package com.example.server.problem.request
 
+import com.example.server.problem.dto.TestCaseDTO
+
 data class ProblemRequest(
-    val code: String,
+    val number: String,
     val name: String,
     val description: String,
     val inputDescription: String,
     val outputDescription: String,
-    val testCases: List<TestCaseRequest>,
-) {
-    class TestCaseRequest(
-        val input: List<String>,
-        val output: String,
-    )
-}
+    val testCases: List<TestCaseDTO<List<String>>>,
+)

@@ -9,22 +9,22 @@ import React, { useEffect } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 
 interface ProblemListDataType extends DataType {
-  problemCode: string;
+  problemNumber: string;
   problemName: string;
 }
 
 const columns: TableProps<ProblemListDataType>["columns"] = [
   {
     title: "#",
-    dataIndex: "problemCode",
-    key: "problemCode",
+    dataIndex: "problemNumber",
+    key: "problemNumber",
   },
   {
     title: "Name",
     dataIndex: "problemName",
     key: "problemName",
-    render: (name, { problemCode }) => (
-      <Link to={`${problemCode}`}>{name}</Link>
+    render: (name, { problemNumber }) => (
+      <Link to={`${problemNumber}`}>{name}</Link>
     ),
   },
 ];

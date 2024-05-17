@@ -1,6 +1,6 @@
 export interface ProblemAddRequest {
-  problemCode: string;
-  problemName: string;
+  number: string;
+  name: string;
   description: string;
   inputDescription: string;
   outputDescription: string;

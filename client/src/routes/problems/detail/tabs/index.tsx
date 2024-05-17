@@ -15,7 +15,7 @@ const ProblemDescriptionTab = () => {
           <Flex flex={"1 0 auto"} vertical>
             <Title level={5}>Input</Title>
             <Paragraph>
-              <pre>{testCase.inputs.join("\n")}</pre>
+              <pre>{testCase.input}</pre>
             </Paragraph>
           </Flex>
           <Divider type="vertical" />
@@ -34,7 +34,7 @@ const ProblemDescriptionTab = () => {
     <Typography className="pt-8">
       <Flex justify="center">
         <Title level={3}>
-          {data.problemId}. {data.problemName}
+          {data.problemNumber}. {data.problemName}
         </Title>
       </Flex>
       <Divider />

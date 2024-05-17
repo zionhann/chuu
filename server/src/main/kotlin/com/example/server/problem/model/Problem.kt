@@ -12,7 +12,9 @@ import org.hibernate.annotations.CascadeType
 @Entity
 class Problem(
     @Column(unique = true)
-    var code: String,
+    var number: String,
+    @Column
+    var name: String,
     @Column(length = 1020)
     var description: String,
     @Column

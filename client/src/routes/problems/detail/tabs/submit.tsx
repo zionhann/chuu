@@ -15,7 +15,7 @@ const Extensions: ExtensionMap = {
 };
 
 const SolutionSubmitTab = () => {
-  const { problemId, problemName } =
+  const { problemNumber: problemId, problemName } =
     useOutletContext() as ProblemDetailPageData;
   const [lang, setLanguage] = useState("none");
 
