@@ -1,7 +1,11 @@
 import { Flex, Select, TableProps, Typography } from "antd";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLoaderData } from "react-router-dom";
 import SimpleTable, { DataType } from "../../components/simpleTable";
 import Search from "antd/es/input/Search";
+import { SolutionListResponse } from "./loader";
+import { useEffect, useState } from "react";
+import { Client } from "@stomp/stompjs";
+import log from "../../utils/log";
 
 type VerdictType = (typeof VerdictType)[keyof typeof VerdictType];
 const VerdictType = {
@@ -24,7 +28,7 @@ interface SubmissionStatusDataType extends DataType {
   submissionId: number;
   submissionDate: string;
   author: string;
-  problemId: string;
+  problemNumber: string;
   lang: string;
   verdict: VerdictType;
 }
@@ -32,8 +36,8 @@ interface SubmissionStatusDataType extends DataType {
 const columns: TableProps<SubmissionStatusDataType>["columns"] = [
   {
     title: "#",
-    dataIndex: "submissionId",
-    key: "submissionId",
+    dataIndex: "solutionId",
+    key: "solutionId",
   },
   {
     title: "Date",
@@ -47,15 +51,15 @@ const columns: TableProps<SubmissionStatusDataType>["columns"] = [
   },
   {
     title: "Problem",
-    dataIndex: "problemId",
-    key: "problemId",
-    render: (problemId) => (
-      <Link to={`/problems/${problemId}`}>{problemId}</Link>
+    dataIndex: "problemNumber",
+    key: "problemNumber",
+    render: (problemNumber) => (
+      <Link to={`/problems/${problemNumber}`}>{problemNumber}</Link>
     ),
   },
   {
     title: "Lang",
-    dataIndex: "lang",
+    dataIndex: "language",
     key: "lang",
   },
   {
@@ -70,56 +74,61 @@ const columns: TableProps<SubmissionStatusDataType>["columns"] = [
   },
 ];
 
-const dataSource: SubmissionStatusDataType[] = [
-  {
-    key: "1",
-    submissionId: 4,
-    submissionDate: "2021-09-01 12:00:00",
-    author: "user1",
-    problemId: "J001",
-    lang: "C++",
-    verdict: "Accepted",
-  },
-  {
-    key: "2",
-    submissionId: 3,
-    submissionDate: "2021-09-01 12:00:00",
-    author: "user2",
-    problemId: "J002",
-    lang: "Java",
-    verdict: "Wrong answer",
-  },
-  {
-    key: "3",
-    submissionId: 2,
-    submissionDate: "2021-09-01 12:00:00",
-    author: "user3",
-    problemId: "J003",
-    lang: "Java",
-    verdict: "Runtime error",
-  },
-  {
-    key: "4",
-    submissionId: 1,
-    submissionDate: "2021-09-01 12:00:00",
-    author: "user4",
-    problemId: "J004",
-    lang: "C++",
-    verdict: "Running",
-  },
-];
+interface SolutionLoaderType {
+  res: SolutionListResponse;
+  problemNumber: string | undefined;
+}
+
+interface MessageDataType {
+  solutionId: number;
+  verdict: VerdictType;
+}
 
 const SubmissionStatusPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const problemId = searchParams.get("problemId") ?? undefined;
+  const { res, problemNumber } = useLoaderData() as SolutionLoaderType;
+  const [dataSource, setDataSource] = useState(
+    res.data.map((data, index) => {
+      return {
+        key: index.toString(),
+        ...data,
+      };
+    })
+  );
+
+  useEffect(() => {
+    const client = new Client({
+      brokerURL: `${import.meta.env.VITE_WS_SERVER_URL}/solution`,
+      onConnect: () => {
+        client.subscribe("/topic/status", (message) => {
+          const data: MessageDataType = JSON.parse(message.body);
+          log.info("Received message", data);
+
+          setDataSource((prev) =>
+            prev.map((prevData) => {
+              if (prevData.solutionId === data.solutionId) {
+                log.info("Update verdict", data);
+                return {
+                  ...prevData,
+                  verdict: data.verdict,
+                };
+              }
+              return prevData;
+            })
+          );
+        });
+      },
+    });
+    client.activate();
+    log.info("Initiates WebSocket connection", client);
+  }, []);
 
   return (
     <Flex gap="large" vertical>
       <Flex align="center" gap="small">
         <Select
-          defaultValue="problemId"
+          defaultValue="problemNumber"
           onChange={(value) => alert(value)}
-          options={[{ value: "problemId", label: "Problem" }]}
+          options={[{ value: "problemNumber", label: "Problem" }]}
           size="large"
         />
         <Search
@@ -127,7 +136,7 @@ const SubmissionStatusPage = () => {
           enterButton="Search"
           size="large"
           onSearch={(value) => alert(value)}
-          defaultValue={problemId}
+          defaultValue={problemNumber}
         />
       </Flex>
       <SimpleTable dataSource={dataSource} columns={columns} />

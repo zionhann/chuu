@@ -23,7 +23,9 @@ const ContentTab = ({ data, selected }: ContentTapProps) => {
     },
     {
       key: TabKeys.STATUS,
-      label: <Link to={`/status?problemId=${data.problemNumber}`}>STATUS</Link>,
+      label: (
+        <Link to={`/status?problemNumber=${data.problemNumber}`}>STATUS</Link>
+      ),
     },
   ];
 

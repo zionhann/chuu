@@ -1,38 +1,58 @@
 import { Button, Divider, Flex, Form, Input, Select, Typography } from "antd";
 import Title from "antd/es/typography/Title";
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { ProblemDetailPageData } from "../loader";
 import { useState } from "react";
 import CodeMirror, { Extension } from "@uiw/react-codemirror";
 import { java } from "@codemirror/lang-java";
+import axiosInstance from "../../../../apis/axios";
+import log from "../../../../utils/log";
 
 type ExtensionMap = { [key: string]: Extension[] | undefined };
 
 const Extensions: ExtensionMap = {
-  none: undefined,
-  java: [java()],
+  NONE: undefined,
+  JAVA: [java()],
   // TODO: Support C++
 };
 
-const SolutionSubmitTab = () => {
-  const { problemNumber: problemId, problemName } =
-    useOutletContext() as ProblemDetailPageData;
-  const [lang, setLanguage] = useState("none");
+interface OnSubmitResponse {
+  data: {
+    solutionId: number;
+  }[];
+}
 
-  const onFinish = (values) => {
-    console.log("data", values);
+const SolutionSubmitTab = () => {
+  const { problemNumber, problemName } =
+    useOutletContext() as ProblemDetailPageData;
+  const [lang, setLanguage] = useState("NONE");
+  const navigate = useNavigate();
+
+  const onSubmit = async (values) => {
+    try {
+      log.info(`POST /solutions/${problemNumber}`, values);
+      const res: OnSubmitResponse = await axiosInstance.post(
+        `/solutions/${problemNumber}`,
+        values
+      );
+      const solutionId = res.data[0].solutionId;
+      axiosInstance.post(`/solutions/${solutionId}/grade`);
+      navigate(`/status?problemNumber=${problemNumber}`);
+    } catch (error) {
+      log.error(`POST /solutions/${problemNumber}`, error);
+    }
   };
 
   return (
     <Typography className="pt-8">
       <Flex justify="center">
         <Title level={3}>
-          {problemId}. {problemName}
+          {problemNumber}. {problemName}
         </Title>
       </Flex>
       <Divider />
 
-      <Form onFinish={onFinish} className="flex flex-col" layout="vertical">
+      <Form onFinish={onSubmit} className="flex flex-col" layout="vertical">
         <Form.Item
           label="Author"
           name="author"
@@ -53,7 +73,7 @@ const SolutionSubmitTab = () => {
             options={[
               {
                 label: "Java",
-                value: "java",
+                value: "JAVA",
               },
             ]}
           />

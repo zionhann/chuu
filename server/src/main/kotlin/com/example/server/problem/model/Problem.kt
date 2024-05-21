@@ -1,5 +1,6 @@
 package com.example.server.problem.model
 
+import com.example.server.common.BaseTime
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
@@ -21,7 +22,7 @@ class Problem(
     var inputDescription: String,
     @Column
     var outputDescription: String,
-) {
+) : BaseTime() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L
