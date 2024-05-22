@@ -4,15 +4,15 @@ import { useState } from "react";
 
 const ExampleForm = () => {
   const form = Form.useFormInstance();
-  const [isDisabled, setIsDisabled] = useState(false);
+  const [disabledKeys, setDisabledKeys] = useState<number[]>([]);
 
   const onChange = (key: number, isChecked: boolean) => {
     if (isChecked) {
-      setIsDisabled(false);
+      setDisabledKeys(disabledKeys.filter((k) => k !== key));
       return;
     }
     form.getFieldValue("testCases")[key].input = "";
-    setIsDisabled(true);
+    setDisabledKeys([...disabledKeys, key]);
   };
 
   return (
@@ -54,7 +54,7 @@ const ExampleForm = () => {
                 <Form.Item name={[field.name, "input"]} initialValue="">
                   <Input.TextArea
                     style={{ resize: "none", minHeight: 96 }}
-                    disabled={isDisabled}
+                    disabled={disabledKeys.includes(field.key)}
                     autoSize
                   />
                 </Form.Item>

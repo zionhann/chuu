@@ -39,7 +39,7 @@ class ProblemService(
         return problems.map { problem ->
             ProblemResponse.ProblemList(
                 problemNumber = problem.number,
-                problemName = problem.description,
+                problemName = problem.name,
             )
         }
     }
