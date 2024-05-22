@@ -24,7 +24,7 @@ class ProblemService(
                     problemRequest.testCases.mapIndexed { index, testCase ->
                         TestCase(
                             number = index + 1,
-                            input = testCase.input.joinToString("\n"),
+                            input = testCase.input,
                             output = testCase.output,
                             problem = this,
                         )

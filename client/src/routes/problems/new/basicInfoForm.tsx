@@ -32,7 +32,7 @@ const BasicInfoForm = () => {
         name="inputDescription"
         rules={[{ required: true, message: "Please input!" }]}
       >
-        <Input.TextArea style={{ resize: "none" }} rows={3} />
+        <Input.TextArea style={{ resize: "none", minHeight: 96 }} autoSize />
       </Form.Item>
 
       <Form.Item
@@ -40,7 +40,7 @@ const BasicInfoForm = () => {
         name="outputDescription"
         rules={[{ required: true, message: "Please input!" }]}
       >
-        <Input.TextArea style={{ resize: "none" }} rows={3} />
+        <Input.TextArea style={{ resize: "none", minHeight: 96 }} autoSize />
       </Form.Item>
     </>
   );

@@ -1,8 +1,19 @@
 import { CloseOutlined } from "@ant-design/icons";
-import { Button, Card, Flex, Form, Input, Typography } from "antd";
+import { Button, Card, Flex, Form, Input, Switch, Typography } from "antd";
+import { useState } from "react";
 
 const ExampleForm = () => {
   const form = Form.useFormInstance();
+  const [isDisabled, setIsDisabled] = useState(false);
+
+  const onChange = (key: number, isChecked: boolean) => {
+    if (isChecked) {
+      setIsDisabled(false);
+      return;
+    }
+    form.getFieldValue("testCases")[key].input = "";
+    setIsDisabled(true);
+  };
 
   return (
     <>
@@ -33,55 +44,30 @@ const ExampleForm = () => {
                   />
                 }
               >
-                <Form.Item label="Inputs">
-                  <Form.List name={[field.name, "input"]} initialValue={[]}>
-                    {(subFields, subOpt) => (
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          rowGap: 16,
-                        }}
-                      >
-                        {subFields.map((subField) => (
-                          <Flex key={subField.key}>
-                            <Form.Item
-                              noStyle
-                              name={[subField.name]}
-                              rules={[
-                                { required: true, message: "Please input!" },
-                              ]}
-                              initialValue={""}
-                            >
-                              <Input placeholder="input" />
-                            </Form.Item>
-                            <CloseOutlined
-                              onClick={() => {
-                                subOpt.remove(subField.name);
-                              }}
-                              className="pl-2"
-                            />
-                          </Flex>
-                        ))}
-                        <Button
-                          type="dashed"
-                          onClick={() => subOpt.add()}
-                          block
-                        >
-                          + Add Input
-                        </Button>
-                      </div>
-                    )}
-                  </Form.List>
+                <Flex gap={10} className="pb-2">
+                  <label>Input</label>
+                  <Switch
+                    onChange={(isChecked) => onChange(field.key, isChecked)}
+                    defaultChecked
+                  />
+                </Flex>
+                <Form.Item name={[field.name, "input"]} initialValue="">
+                  <Input.TextArea
+                    style={{ resize: "none", minHeight: 96 }}
+                    disabled={isDisabled}
+                    autoSize
+                  />
                 </Form.Item>
 
                 <Form.Item
                   label="Output"
                   name={[field.name, "output"]}
                   rules={[{ required: true, message: "Please input!" }]}
-                  initialValue={""}
                 >
-                  <Input.TextArea style={{ resize: "none" }} rows={3} />
+                  <Input.TextArea
+                    style={{ resize: "none", minHeight: 96 }}
+                    autoSize
+                  />
                 </Form.Item>
               </Card>
             ))}

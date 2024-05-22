@@ -14,6 +14,6 @@ class ProblemResponse {
         val description: String,
         val input: String,
         val output: String,
-        val testCases: List<TestCaseDTO<String>>,
+        val testCases: List<TestCaseDTO>,
     )
 }

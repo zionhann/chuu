@@ -8,5 +8,5 @@ data class ProblemRequest(
     val description: String,
     val inputDescription: String,
     val outputDescription: String,
-    val testCases: List<TestCaseDTO<List<String>>>,
+    val testCases: List<TestCaseDTO>,
 )
