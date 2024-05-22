@@ -9,8 +9,10 @@ import ProblemListLoader from "./problems/loader.tsx";
 import SolutionSubmitTab from "./problems/detail/tabs/submit.tsx";
 import ProblemDescriptionTab from "./problems/detail/tabs/index.tsx";
 import LandingPage from "./landing.tsx";
-import SubmissionStatusPage from "./status/index.tsx";
+import SolutionStatusPage from "./status/index.tsx";
 import SolutionListLoader from "./status/loader.tsx";
+import StatusDetailLoader from "./status/detail/loader.tsx";
+import StatusDetailPage from "./status/detail/index.tsx";
 
 const Router = createBrowserRouter([
   {
@@ -47,8 +49,13 @@ const Router = createBrowserRouter([
       },
       {
         path: "/status",
-        element: <SubmissionStatusPage />,
+        element: <SolutionStatusPage />,
         loader: SolutionListLoader,
+      },
+      {
+        path: "/status/:solutionId",
+        element: <StatusDetailPage />,
+        loader: StatusDetailLoader,
       },
     ],
   },

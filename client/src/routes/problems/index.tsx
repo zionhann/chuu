@@ -2,7 +2,7 @@ import { Link, useLoaderData, useOutletContext } from "react-router-dom";
 import { ProblemListResponse } from "./loader";
 import SimpleTable from "../../components/simpleTable";
 import { DataType } from "../../components/simpleTable";
-import { Flex, TableProps } from "antd";
+import { Flex, TableProps, Typography } from "antd";
 import { Button } from "antd";
 import PageKeys from "../../constants/pageKeys";
 import React, { useEffect } from "react";
@@ -24,7 +24,9 @@ const columns: TableProps<ProblemListDataType>["columns"] = [
     dataIndex: "problemName",
     key: "problemName",
     render: (name, { problemNumber }) => (
-      <Link to={`${problemNumber}`}>{name}</Link>
+      <Typography.Text>
+        <Link to={`${problemNumber}`}>{name}</Link>
+      </Typography.Text>
     ),
   },
 ];

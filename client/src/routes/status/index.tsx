@@ -9,11 +9,12 @@ import log from "../../utils/log";
 
 type VerdictType = (typeof VerdictType)[keyof typeof VerdictType];
 const VerdictType = {
-  accepted: "Accepted",
-  wrongAnswer: "Wrong answer",
-  runtimeError: "Runtime error",
-  compileError: "Compile error",
-  running: "Running",
+  accepted: "ACCEPTED",
+  wrongAnswer: "WRONG_ANSWER",
+  runtimeError: "RUNTIME_ERROR",
+  compileError: "COMPILE_ERROR",
+  running: "RUNNING",
+  pending: "PENDING",
 } as const;
 
 const VerdictColours: { [key in VerdictType]: string } = {
@@ -22,6 +23,7 @@ const VerdictColours: { [key in VerdictType]: string } = {
   [VerdictType.runtimeError]: "orangered",
   [VerdictType.compileError]: "orangered",
   [VerdictType.running]: "blue",
+  [VerdictType.pending]: "gray",
 };
 
 interface SubmissionStatusDataType extends DataType {
@@ -66,11 +68,18 @@ const columns: TableProps<SubmissionStatusDataType>["columns"] = [
     title: "Verdict",
     dataIndex: "verdict",
     key: "verdict",
-    render: (verdict: VerdictType) => (
-      <Typography.Text style={{ color: VerdictColours[verdict] }}>
-        {verdict}
-      </Typography.Text>
-    ),
+    render: (verdict: VerdictType, record) =>
+      verdict !== VerdictType.pending && verdict !== VerdictType.running ? (
+        <Link to={`/status/${record.submissionId}`}>
+          <Typography.Text style={{ color: VerdictColours[verdict] }} underline>
+            {verdict}
+          </Typography.Text>
+        </Link>
+      ) : (
+        <Typography.Text style={{ color: VerdictColours[verdict] }}>
+          {verdict}
+        </Typography.Text>
+      ),
   },
 ];
 
@@ -84,7 +93,7 @@ interface MessageDataType {
   verdict: VerdictType;
 }
 
-const SubmissionStatusPage = () => {
+const SolutionStatusPage = () => {
   const { res, problemNumber } = useLoaderData() as SolutionLoaderType;
   const [dataSource, setDataSource] = useState(
     res.data.map((data, index) => {
@@ -144,4 +153,4 @@ const SubmissionStatusPage = () => {
   );
 };
 
-export default SubmissionStatusPage;
+export default SolutionStatusPage;
