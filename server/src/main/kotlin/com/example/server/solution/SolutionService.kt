@@ -7,6 +7,7 @@ import com.example.server.solution.request.SearchFilter
 import com.example.server.solution.request.SolutionId
 import com.example.server.solution.request.SolutionRequest
 import com.example.server.solution.response.SolutionResponse
+import com.example.server.solution.response.StatusResponse
 import com.example.server.solution.response.VerdictStatusResponse
 import jakarta.transaction.Transactional
 import org.springframework.messaging.simp.SimpMessagingTemplate
@@ -24,60 +25,51 @@ class SolutionService(
 ) {
     fun startGrading(solutionId: Long) {
         val solution =
-            solutionRepository
-                .findById(solutionId)
+            solutionRepository.findById(solutionId)
                 .orElseThrow(::IllegalArgumentException)
-        runCode(solution)
+        compileCode(solution)?.let { file ->
+            runTestCases(solution, file)
+        }
         template.convertAndSend("/topic/status", VerdictStatusResponse(solution.id, solution.status))
     }
 
-    private fun runCode(solution: Solution) {
-        val className = findClassName(solution.sourceCode)
+    private fun findEntryPoint(src: String): String? {
+        val pattern = Pattern.compile("class\\s+(\\w+)")
+        val matcher = pattern.matcher(src)
+        return if (matcher.find()) matcher.group(1) else null
+    }
+
+    private fun compileCode(solution: Solution): File? {
+        val className =
+            findEntryPoint(solution.sourceCode) ?: run {
+                solution.status = VerdictStatus.COMPILE_ERROR
+                solution.report = "No entry point found"
+                return null
+            }
         val parentPath = "${solution.author}/${solution.problem.number}/${solution.id}"
         val sourceFile =
             File(parentPath, "$className.java").apply {
                 File(parentPath).mkdirs()
-                this.writeText(solution.sourceCode)
+                writeText(solution.sourceCode)
             }
-        println("source code: ${sourceFile.readText()}")
-        println("path: ${sourceFile.absolutePath}")
 
-        compileCode(sourceFile, solution)
+        val process =
+            ProcessBuilder("javac", sourceFile.name)
+                .directory(sourceFile.parentFile)
+                .redirectError(ProcessBuilder.Redirect.PIPE)
+                .start()
 
-        if (solution.status != VerdictStatus.COMPILE_ERROR) {
-            runTestCases(solution, sourceFile)
-        }
-    }
-
-    private fun findClassName(src: String): String {
-        val pattern = Pattern.compile("class\\s+(\\w+)")
-        val matcher = pattern.matcher(src)
-        return if (matcher.find()) {
-            matcher.group(1)
-        } else {
-            throw IllegalArgumentException("No class name found in the source code.")
-        }
-    }
-
-    private fun compileCode(
-        sourceFile: File,
-        solution: Solution,
-    ) {
-        println("Compiling...")
-        val err = File(sourceFile.parent, "error.txt")
-        ProcessBuilder("javac", sourceFile.name)
-            .directory(sourceFile.parentFile)
-            .redirectError(err)
-            .start()
-            .waitFor()
-
-        val message = err.readText()
-        if (message.isNotEmpty()) {
-            println("Compilation error: $message")
-            solution.status = VerdictStatus.COMPILE_ERROR
-            return
-        }
-        println("Compilation successful")
+        process.waitFor()
+        process.inputStream.bufferedReader()
+            .readText()
+            .let { output ->
+                if (output.isNotEmpty()) {
+                    solution.status = VerdictStatus.COMPILE_ERROR
+                    solution.report = output
+                    return null
+                }
+            }
+        return sourceFile
     }
 
     private fun runTestCases(
@@ -88,63 +80,55 @@ class SolutionService(
         template.convertAndSend("/topic/status", VerdictStatusResponse(solution.id, solution.status))
 
         solution.problem.testCases.map { testCase ->
-            println("Running on test case ${testCase.number}")
-            val outputFile = File(sourceFile.parent, "output.txt").apply { createNewFile() }
-            val errorFile = File(sourceFile.parent, "error.txt")
+            val err = File.createTempFile("report", null)
             val process =
                 ProcessBuilder("java", sourceFile.nameWithoutExtension)
                     .directory(sourceFile.parentFile)
                     .redirectOutput(ProcessBuilder.Redirect.PIPE)
-                    .redirectError(errorFile)
+                    .redirectError(err)
                     .start()
 
-            println("input: ${testCase.input}")
             PrintWriter(process.outputStream).use { out -> out.println(testCase.input) }
             process.waitFor()
 
-            val error = errorFile.readText()
+            val error = err.readText()
 
             if (error.isNotEmpty()) {
-                println("Runtime error: $error")
                 solution.status = VerdictStatus.RUNTIME_ERROR
+                solution.report = error
                 return
             }
             val output = process.inputStream.bufferedReader().readText()
-            outputFile.writeText(
-                outputFile.readText() +
-                    """
-                    |[Test case ${testCase.number}]
-                    
-                    |Input:
-                    |${testCase.input}
-                    
-                    |Expected:
-                    |${testCase.output}
-                    
-                    |Actual:
-                    |$output
-                    |
-                    """.trimMargin(),
+            solution.report.plus(
+                """
+                            |[Test case ${testCase.number}]
+                            
+                            |Input:
+                            |${testCase.input}
+                            
+                            |Expected:
+                            |${testCase.output}
+                            
+                            |Actual:
+                            |$output
+                            |
+                """.trimMargin(),
             )
 
             if (output.contains(testCase.output)) {
-                outputFile.writeText(
-                    outputFile.readText() +
-                        """
-                        |Result: Passed
-                        |============
-                        """.trimMargin(),
+                solution.report.plus(
+                    """
+                                    |Result: Passed
+                                    |============
+                    """.trimMargin(),
                 )
-                println("Test case  ${testCase.number} passed")
             } else {
-                outputFile.writeText(
-                    outputFile.readText() +
-                        """
-                        |Result: Failed
-                        |============
-                        """.trimMargin(),
+                solution.report.plus(
+                    """
+                                    |Result: Failed
+                                    |============
+                    """.trimMargin(),
                 )
-                println("Test case ${testCase.number} failed")
                 solution.status = VerdictStatus.WRONG_ANSWER
                 return
             }
@@ -186,5 +170,17 @@ class SolutionService(
             )
         val saved = solutionRepository.save(solution)
         return SolutionId(saved.id)
+    }
+
+    fun getStatusOf(solutionId: Long): StatusResponse {
+        val solution =
+            solutionRepository
+                .findById(solutionId)
+                .orElseThrow(::IllegalArgumentException)
+        return StatusResponse(
+            solutionId = solution.id,
+            sourceCode = solution.sourceCode,
+            report = solution.report,
+        )
     }
 }

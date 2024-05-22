@@ -5,6 +5,7 @@ import com.example.server.solution.request.SearchFilter
 import com.example.server.solution.request.SolutionId
 import com.example.server.solution.request.SolutionRequest
 import com.example.server.solution.response.SolutionResponse
+import com.example.server.solution.response.StatusResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CrossOrigin
@@ -46,5 +47,13 @@ class SolutionController(
     ): BaseApiResponse<SolutionResponse> {
         val solutions = solutionService.getSolutions(searchFilter)
         return BaseApiResponse(solutions)
+    }
+
+    @GetMapping("/{solutionId}/status")
+    fun getStatusDetail(
+        @PathVariable solutionId: Long,
+    ): BaseApiResponse<StatusResponse> {
+        val solution = solutionService.getStatusOf(solutionId)
+        return BaseApiResponse(listOf(solution))
     }
 }

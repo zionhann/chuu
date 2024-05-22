@@ -27,7 +27,7 @@ const VerdictColours: { [key in VerdictType]: string } = {
 };
 
 interface SubmissionStatusDataType extends DataType {
-  submissionId: number;
+  solutionId: number;
   submissionDate: string;
   author: string;
   problemNumber: string;
@@ -70,7 +70,7 @@ const columns: TableProps<SubmissionStatusDataType>["columns"] = [
     key: "verdict",
     render: (verdict: VerdictType, record) =>
       verdict !== VerdictType.pending && verdict !== VerdictType.running ? (
-        <Link to={`/status/${record.submissionId}`}>
+        <Link to={`/status/${record.solutionId}`}>
           <Typography.Text style={{ color: VerdictColours[verdict] }} underline>
             {verdict}
           </Typography.Text>
