@@ -11,7 +11,6 @@ const ExampleForm = () => {
       setDisabledKeys(disabledKeys.filter((k) => k !== key));
       return;
     }
-    form.getFieldValue("testCases")[key].input = "";
     setDisabledKeys([...disabledKeys, key]);
   };
 

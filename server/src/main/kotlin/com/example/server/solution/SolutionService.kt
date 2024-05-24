@@ -15,7 +15,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
-import java.io.PrintWriter
 import java.nio.file.Files
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -113,19 +112,16 @@ class SolutionService(
         solution.status = VerdictStatus.RUNNING
         template.convertAndSend("/topic/status", VerdictStatusResponse(solution.id, solution.status))
 
-        solution.problem.testCases.map { testCase ->
-            val nameWithoutExtension =
-                mainFile.filename
-                    .removeSuffix(".java")
+        solution.problem.testCases.forEach { testCase ->
+            val nameWithoutExtension = mainFile.filename.removeSuffix(".java")
             val process =
                 ProcessBuilder("java", nameWithoutExtension)
                     .directory(File(mainFile.workingDir))
-                    .redirectOutput(ProcessBuilder.Redirect.PIPE)
-                    .redirectError(ProcessBuilder.Redirect.PIPE)
                     .start()
 
-            PrintWriter(process.outputStream).use { out ->
-                out.println(testCase.input ?: "")
+            process.outputWriter().use { out ->
+                out.write(testCase.input ?: "")
+                out.flush()
             }
             process.waitFor()
 
@@ -139,10 +135,12 @@ class SolutionService(
                 solution.report = error
                 return
             }
-            val output =
+            val expected = testCase.output.split("\n")
+            val actual =
                 process.inputStream.bufferedReader()
                     .readText()
                     .trim()
+            val isPassed = expected.all { actual.contains(it) }
 
             solution.report =
                 solution.report.plus(
@@ -150,36 +148,20 @@ class SolutionService(
                             |[Test case ${testCase.number}]
                             
                             |Input:
-                            |${testCase.input ?: "<Empty>"}
+                            |${testCase.input ?: "<empty>"}
                             
                             |Expected:
                             |${testCase.output}
                             
                             |Actual:
-                            |$output
+                            |$actual
+                            |
+                            |Result: ${if (isPassed) "Passed" else "Failed"}
+                            |============
                             |
                     """.trimMargin(),
                 )
-
-            val actual = output.split("\n")
-            val expected = testCase.output.split("\n")
-
-            if (actual.containsAll(expected)) {
-                solution.report =
-                    solution.report.plus(
-                        """
-                                    |Result: Passed
-                                    |============
-                        """.trimMargin(),
-                    )
-            } else {
-                solution.report =
-                    solution.report.plus(
-                        """
-                                    |Result: Failed
-                                    |============
-                        """.trimMargin(),
-                    )
+            if (!isPassed) {
                 solution.status = VerdictStatus.WRONG_ANSWER
                 return
             }

@@ -43,7 +43,6 @@ class SolutionController(
             sourceCode?.let {
                 solutionService.submitSolution(problemNumber, metadata, it)
             } ?: let { _ ->
-                println("sourceFiles: $sourceFiles")
                 solutionService.submitSolution(problemNumber, metadata, sourceFiles)
             }
         return ResponseEntity
