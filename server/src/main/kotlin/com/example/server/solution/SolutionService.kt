@@ -28,13 +28,58 @@ class SolutionService(
     private val template: SimpMessagingTemplate,
 ) {
     fun startGrading(solutionId: Long) {
-        val solution =
-            solutionRepository.findById(solutionId)
+        val (solution, mainFile) =
+            solutionRepository
+                .findById(solutionId)
                 .orElseThrow(::IllegalArgumentException)
-        compileCode(solution)?.let { mainFile ->
-            runTestCases(solution, mainFile)
+                .also(::unifyInputStream)
+                .let(::compileCode)
+
+        mainFile?.let {
+            runTestCases(solution, it)
         }
         template.convertAndSend("/topic/status", VerdictStatusResponse(solution.id, solution.status))
+    }
+
+    private fun unifyInputStream(solution: Solution) {
+        val mainSourceFile = findEntryPoint(solution.sourceFiles) ?: return
+        val mainFile = File(mainSourceFile.pathname)
+        val mainSourceCode = mainFile.readText()
+        val className = findClassName(mainSourceCode) ?: return
+
+        solution.sourceFiles.forEach { sourceFile ->
+            val file = File(sourceFile.pathname)
+            val sourceCode = file.readText()
+
+            Pattern
+                .compile("Scanner\\s+\\w+\\s*=\\s*new\\s+Scanner\\(System\\.in\\);")
+                .matcher(sourceCode)
+                .replaceAll { result ->
+                    "/// [Auto-generated] ".plus(result.group())
+                }.let { declarationCommented ->
+                    Pattern
+                        .compile("\\w+\\.(next\\w*\\(\\))")
+                        .matcher(declarationCommented)
+                        .replaceAll { result ->
+                            "$className.GLOBAL_IN.${result.group(1)}"
+                        }
+                }.let { variableRenamed ->
+                    if (sourceFile == mainSourceFile) {
+                        val scannerDeclaration =
+                            "static final Scanner GLOBAL_IN = new Scanner(System.in); /// [Auto-generated]"
+                        Pattern
+                            .compile("class\\s+\\w+\\s*\\{")
+                            .matcher(variableRenamed)
+                            .replaceFirst { result ->
+                                result
+                                    .group()
+                                    .plus("\n\t$scannerDeclaration\n")
+                            }
+                    } else {
+                        variableRenamed
+                    }
+                }.apply(file::writeText)
+        }
     }
 
     private fun findClassName(src: String): String? {
@@ -44,7 +89,7 @@ class SolutionService(
     }
 
     private fun findEntryPoint(sourceFiles: List<SourceFile>): SourceFile? {
-        val regex = "public\\s+static\\s+void\\s+main\\s*\\(\\s*String\\s*\\[\\]\\s*args\\s*\\)"
+        val regex = "public\\s+static\\s+void\\s+main\\s*\\(\\s*String\\s*\\[]\\s*args\\s*\\)"
         val pattern = Pattern.compile(regex)
 
         sourceFiles.forEach { sourceFile ->
@@ -55,7 +100,7 @@ class SolutionService(
         return null
     }
 
-    private fun compileCode(solution: Solution): SourceFile? {
+    private fun compileCode(solution: Solution): Pair<Solution, SourceFile?> {
         val sourceFiles =
             solution.sourceFiles.map {
                 val file = File(it.pathname)
@@ -67,7 +112,7 @@ class SolutionService(
                         findClassName(file.readText()) ?: let { _ ->
                             solution.status = VerdictStatus.COMPILE_ERROR
                             solution.report = "No class name found"
-                            return null
+                            return Pair(solution, null)
                         }
                     val targetFile = File(file.parent, "$className.java")
                     Files.move(file.toPath(), targetFile.toPath())
@@ -92,17 +137,24 @@ class SolutionService(
 
         process.waitFor()
 
-        val error = process.errorStream.bufferedReader().readText()
+        val error =
+            process.errorStream
+                .bufferedReader()
+                .readText()
+                .take(1000)
+
         if (error.isNotEmpty()) {
             solution.status = VerdictStatus.COMPILE_ERROR
             solution.report = error
-            return null
+            return Pair(solution, null)
         }
-        return findEntryPoint(sourceFiles) ?: let { _ ->
-            solution.status = VerdictStatus.COMPILE_ERROR
-            solution.report = "No entry point found"
-            null
-        }
+        val entryPoint =
+            findEntryPoint(sourceFiles) ?: let { _ ->
+                solution.status = VerdictStatus.COMPILE_ERROR
+                solution.report = "No entry point found"
+                return Pair(solution, null)
+            }
+        return Pair(solution, entryPoint)
     }
 
     private fun runTestCases(
@@ -128,7 +180,7 @@ class SolutionService(
             val error =
                 process.errorStream.bufferedReader()
                     .readText()
-                    .trim()
+                    .take(1000)
 
             if (error.isNotEmpty()) {
                 solution.status = VerdictStatus.RUNTIME_ERROR
