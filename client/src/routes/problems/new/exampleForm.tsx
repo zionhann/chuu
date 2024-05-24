@@ -31,46 +31,53 @@ const ExampleForm = () => {
       >
         {(fields, { add, remove }, { errors }) => (
           <div style={{ display: "flex", rowGap: 16, flexDirection: "column" }}>
-            {fields.map((field) => (
-              <Card
-                size="small"
-                title={`Example ${field.name + 1}`}
-                key={field.key}
-                extra={
-                  <CloseOutlined
-                    onClick={() => {
-                      remove(field.name);
-                    }}
-                  />
-                }
-              >
-                <Flex gap={10} className="pb-2">
-                  <label>Input</label>
-                  <Switch
-                    onChange={(isChecked) => onChange(field.key, isChecked)}
-                    defaultChecked
-                  />
-                </Flex>
-                <Form.Item name={[field.name, "input"]} initialValue="">
-                  <Input.TextArea
-                    style={{ resize: "none", minHeight: 96 }}
-                    disabled={disabledKeys.includes(field.key)}
-                    autoSize
-                  />
-                </Form.Item>
+            {fields.map((field) => {
+              const isRequired = !disabledKeys.includes(field.key);
 
-                <Form.Item
-                  label="Output"
-                  name={[field.name, "output"]}
-                  rules={[{ required: true, message: "Please input!" }]}
+              return (
+                <Card
+                  size="small"
+                  title={`Example ${field.name + 1}`}
+                  key={field.key}
+                  extra={
+                    <CloseOutlined
+                      onClick={() => {
+                        remove(field.name);
+                      }}
+                    />
+                  }
                 >
-                  <Input.TextArea
-                    style={{ resize: "none", minHeight: 96 }}
-                    autoSize
-                  />
-                </Form.Item>
-              </Card>
-            ))}
+                  <Flex gap={10} className="pb-2">
+                    <label>Input</label>
+                    <Switch
+                      onChange={(isChecked) => onChange(field.key, isChecked)}
+                      defaultChecked
+                    />
+                  </Flex>
+                  <Form.Item
+                    name={[field.name, "input"]}
+                    rules={[{ required: isRequired, message: "Please input!" }]}
+                  >
+                    <Input.TextArea
+                      style={{ resize: "none", minHeight: 96 }}
+                      disabled={disabledKeys.includes(field.key)}
+                      autoSize
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Output"
+                    name={[field.name, "output"]}
+                    rules={[{ required: true, message: "Please input!" }]}
+                  >
+                    <Input.TextArea
+                      style={{ resize: "none", minHeight: 96 }}
+                      autoSize
+                    />
+                  </Form.Item>
+                </Card>
+              );
+            })}
 
             <Button type="dashed" onClick={() => add()} block>
               + Add Example

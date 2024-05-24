@@ -2,7 +2,7 @@ import axiosInstance from "../../../apis/axios";
 
 export interface StatusDetailResponse {
   solutionId: number;
-  sourceCode: string;
+  sourceCode: string[];
   report: string;
 }
 

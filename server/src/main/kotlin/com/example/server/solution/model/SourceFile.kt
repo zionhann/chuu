@@ -1,4 +1,4 @@
-package com.example.server.problem.model
+package com.example.server.solution.model
 
 import com.example.server.common.BaseTime
 import jakarta.persistence.Column
@@ -10,15 +10,15 @@ import jakarta.persistence.Id
 import jakarta.persistence.ManyToOne
 
 @Entity
-class TestCase(
+class SourceFile(
     @Column
-    val number: Int,
+    var workingDir: String,
     @Column
-    var input: String?,
+    var filename: String,
     @Column
-    var output: String,
+    var pathname: String,
     @ManyToOne(fetch = FetchType.LAZY)
-    var problem: Problem,
+    val solution: Solution,
 ) : BaseTime() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -7,19 +7,19 @@ import { Flex, Typography } from "antd";
 const StatusDetailPage = () => {
   const res = useLoaderData() as StatusDetailResponse;
 
-  return (
-    <Flex vertical>
+  return res.sourceCode.map((sourceCode, index) => (
+    <Flex key={index} vertical>
       <CodeMirror
         extensions={[java()]}
         height="50vh"
-        value={res.sourceCode}
+        value={sourceCode}
         readOnly
       />
       <Typography>
         <pre>{res.report}</pre>
       </Typography>
     </Flex>
-  );
+  ));
 };
 
 export default StatusDetailPage;
