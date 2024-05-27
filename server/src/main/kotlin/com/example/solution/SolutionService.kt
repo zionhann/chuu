@@ -42,43 +42,62 @@ class SolutionService(
     }
 
     private fun unifyInputStream(solution: Solution) {
-        val mainSourceFile = findEntryPoint(solution.sourceFiles) ?: return
-        val mainFile = File(mainSourceFile.pathname)
-        val mainSourceCode = mainFile.readText()
-        val className = findClassName(mainSourceCode) ?: return
-
         solution.sourceFiles.forEach { sourceFile ->
             val file = File(sourceFile.pathname)
             val sourceCode = file.readText()
+            val (isScannerFound, modifiedCode) = invalidateScannerDeclaration(sourceCode)
 
+            if (isScannerFound) {
+                val mainSourceFile = findEntryPoint(solution.sourceFiles) ?: return
+                val mainSourceCode = File(mainSourceFile.pathname).readText()
+                val className = findClassName(mainSourceCode) ?: return
+
+                val renamedCode = renameVariable(modifiedCode, className)
+                val finalCode = if (sourceFile == mainSourceFile) declareGlobalScanner(renamedCode) else renamedCode
+                file.writeText(finalCode)
+            }
+        }
+    }
+
+    private fun invalidateScannerDeclaration(src: String): Pair<Boolean, String> {
+        val regex = "Scanner\\s+\\w+\\s*=\\s*new\\s+Scanner\\(System\\.in\\);"
+        val matcher =
             Pattern
-                .compile("Scanner\\s+\\w+\\s*=\\s*new\\s+Scanner\\(System\\.in\\);")
-                .matcher(sourceCode)
-                .replaceAll { result ->
-                    "/// [Auto-generated] ".plus(result.group())
-                }.let { declarationCommented ->
-                    Pattern
-                        .compile("\\w+\\.(next\\w*\\(\\))")
-                        .matcher(declarationCommented)
-                        .replaceAll { result ->
-                            "$className.GLOBAL_IN.${result.group(1)}"
-                        }
-                }.let { variableRenamed ->
-                    if (sourceFile == mainSourceFile) {
-                        val scannerDeclaration =
-                            "static final Scanner GLOBAL_IN = new Scanner(System.in); /// [Auto-generated]"
-                        Pattern
-                            .compile("class\\s+\\w+\\s*\\{")
-                            .matcher(variableRenamed)
-                            .replaceFirst { result ->
-                                result
-                                    .group()
-                                    .plus("\n\t$scannerDeclaration\n")
-                            }
-                    } else {
-                        variableRenamed
-                    }
-                }.apply(file::writeText)
+                .compile(regex)
+                .matcher(src)
+
+        return matcher.find() to
+            matcher.replaceAll { replacer ->
+                "/// [Auto-generated] ".plus(replacer.group())
+            }
+    }
+
+    private fun renameVariable(
+        src: String,
+        className: String,
+    ): String {
+        val regex = "\\w+\\.(next\\w*\\(\\))"
+
+        return Pattern
+            .compile(regex)
+            .matcher(src)
+            .replaceAll { result ->
+                "$className.GLOBAL_IN.${result.group(1)}"
+            }
+    }
+
+    private fun declareGlobalScanner(src: String): String {
+        val regex = "class\\s+\\w+\\s*\\{"
+        val scannerDeclaration = "static final Scanner GLOBAL_IN = new Scanner(System.in); /// [Auto-generated]"
+        val matcher =
+            Pattern
+                .compile(regex)
+                .matcher(src)
+
+        return matcher.replaceFirst { replacer ->
+            replacer
+                .group()
+                .plus("\n\t$scannerDeclaration\n")
         }
     }
 
