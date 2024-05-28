@@ -39,7 +39,9 @@ const ProblemDescriptionTab = () => {
       </Flex>
       <Divider />
 
-      <Paragraph>{data.description}</Paragraph>
+      <Paragraph style={{ whiteSpace: "pre-line" }}>
+        {data.description}
+      </Paragraph>
 
       <Title level={4}>Input</Title>
       <Paragraph>{data.input}</Paragraph>

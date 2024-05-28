@@ -1,5 +1,6 @@
 package com.example.solution.model
 
+import com.example.common.BaseTime
 import com.example.problem.model.Problem
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
@@ -24,7 +25,7 @@ class Solution(
     @Column
     @Enumerated(value = EnumType.STRING)
     var status: VerdictStatus = VerdictStatus.PENDING,
-) : com.example.common.BaseTime() {
+) : BaseTime() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L

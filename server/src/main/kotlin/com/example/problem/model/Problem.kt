@@ -18,9 +18,9 @@ class Problem(
     var name: String,
     @Column(length = 1020)
     var description: String,
-    @Column
+    @Column(length = 1020)
     var inputDescription: String,
-    @Column
+    @Column(length = 1020)
     var outputDescription: String,
 ) : BaseTime() {
     @Id
