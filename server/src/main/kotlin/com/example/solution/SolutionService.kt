@@ -87,7 +87,7 @@ class SolutionService(
     }
 
     private fun declareGlobalScanner(src: String): String {
-        val regex = "class\\s+\\w+\\s*\\{"
+        val regex = "\\w*\\s*class\\s+\\w+\\s*\\{"
         val scannerDeclaration = "static final Scanner GLOBAL_IN = new Scanner(System.in); /// [Auto-generated]"
         val matcher =
             Pattern
