@@ -43,7 +43,10 @@ class SolutionService(
     }
 
     private fun unifyInputStream(solution: Solution) {
-        val isScannerFound = solution.sourceFiles.any { invalidateScannerUsage(File(it.pathname)) }
+        val isScannerFound =
+            solution.sourceFiles
+                .map { invalidateScannerUsage(File(it.pathname)) }
+                .any()
 
         if (isScannerFound) {
             val mainSourceFile = findEntryPoint(solution.sourceFiles) ?: return
@@ -68,7 +71,12 @@ class SolutionService(
     }
 
     private fun invalidateScannerDecl(file: File): Pair<Boolean, String?> {
-        val regex = "Scanner\\s+(\\w+)\\s*=\\s*new\\s+Scanner\\(.*\\)".toRegex()
+        val accessModifier = "((public|protected|private|static|final)\\s+)?"
+        val regex =
+            accessModifier
+                .repeat(3)
+                .plus("Scanner\\s+(\\w+)\\s*=\\s*new\\s+Scanner\\(.*\\)")
+                .toRegex()
         val src = file.readText()
 
         regex
@@ -76,7 +84,7 @@ class SolutionService(
             .apply(file::writeText)
 
         val isScannerFound = regex.containsMatchIn(src)
-        val scannerName = regex.find(src)?.groupValues?.get(1)
+        val scannerName = regex.find(src)?.groupValues?.get(7)
         return isScannerFound to scannerName
     }
 
