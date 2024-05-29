@@ -97,7 +97,7 @@ class SolutionService(
         src: String,
         className: String,
     ): String {
-        val regex = "/// \\[Auto-commented] \\w+\\.(next\\w*\\(\\))".toRegex()
+        val regex = "/// \\[Auto-commented] \\w+\\.((has)?[Nn]ext\\w*\\(\\))".toRegex()
         return regex.replace(src) { "$className.STDIN.${it.groupValues[1]}" }
     }
 
