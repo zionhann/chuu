@@ -87,7 +87,7 @@ class SolutionService(
         val src = file.readText()
         if (scannerName.isNullOrEmpty()) return src
 
-        return "$scannerName\\.\\w+\\(.*\\)"
+        return "\\b$scannerName\\.\\w+\\(.*\\)"
             .toRegex()
             .replace(src) { "/// [Auto-commented] ".plus(it.value) }
             .apply(file::writeText)
