@@ -18,6 +18,7 @@ import java.io.File
 import java.nio.file.Files
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 @Service
@@ -42,18 +43,27 @@ class SolutionService(
     }
 
     private fun unifyInputStream(solution: Solution) {
-        solution.sourceFiles.forEach { sourceFile ->
-            val file = File(sourceFile.pathname)
-            val sourceCode = file.readText()
-            val (isScannerFound, modifiedCode) = invalidateScannerDeclaration(sourceCode)
+        val isScannerFound =
+            solution.sourceFiles.any { sourceFile ->
+                val file = File(sourceFile.pathname)
+                val sourceCode = file.readText()
+                val (isScannerFound, modifiedCode) = invalidateScannerDeclaration(sourceCode)
 
-            if (isScannerFound) {
-                val mainSourceFile = findEntryPoint(solution.sourceFiles) ?: return
-                val mainSourceCode = File(mainSourceFile.pathname).readText()
-                val className = findClassName(mainSourceCode) ?: return
+                file.writeText(modifiedCode)
+                isScannerFound
+            }
 
-                val renamedCode = renameVariable(modifiedCode, className)
-                val finalCode = if (sourceFile == mainSourceFile) declareGlobalScanner(renamedCode) else renamedCode
+        if (isScannerFound) {
+            val mainSourceFile = findEntryPoint(solution.sourceFiles) ?: return
+            val mainSourceCode = File(mainSourceFile.pathname).readText()
+            val className = findClassName(mainSourceCode) ?: return
+
+            solution.sourceFiles.forEach { sourceFile ->
+                val file = File(sourceFile.pathname)
+                val sourceCode = file.readText()
+                val modifiedCode = renameVariable(sourceCode, className)
+                val finalCode = if (sourceFile == mainSourceFile) declareGlobalScanner(modifiedCode) else modifiedCode
+
                 file.writeText(finalCode)
             }
         }
@@ -88,17 +98,45 @@ class SolutionService(
 
     private fun declareGlobalScanner(src: String): String {
         val regex = "\\w*\\s*class\\s+\\w+\\s*\\{"
-        val scannerDeclaration = "static final Scanner GLOBAL_IN = new Scanner(System.in); /// [Auto-generated]"
         val matcher =
             Pattern
                 .compile(regex)
                 .matcher(src)
 
-        return matcher.replaceFirst { replacer ->
-            replacer
-                .group()
-                .plus("\n\t$scannerDeclaration\n")
-        }
+        return matcher
+            .replaceFirst { replacer ->
+                val scannerDeclaration = "static final Scanner GLOBAL_IN = new Scanner(System.in); /// [Auto-generated]"
+
+                replacer
+                    .group()
+                    .plus("\n\t$scannerDeclaration\n")
+            }
+            .let(::importScanner)
+    }
+
+    private fun importScanner(src: String): String {
+        return if (isScannerImported(src)) src else addScannerImport(src)
+    }
+
+    private fun isScannerImported(src: String): Boolean {
+        val regex = "import\\s+java\\.util\\.Scanner\\s*;"
+        return Pattern
+            .compile(regex)
+            .matcher(src)
+            .find()
+    }
+
+    private fun addScannerImport(src: String): String {
+        val regex = "package\\s+\\w+\\s*;"
+        return Pattern
+            .compile(regex)
+            .matcher(src)
+            .takeIf(Matcher::find)
+            ?.replaceFirst { result ->
+                result
+                    .group()
+                    .plus("\n\nimport java.util.Scanner;\n\n")
+            } ?: "import java.util.Scanner;\n".plus(src)
     }
 
     private fun findClassName(src: String): String? {
