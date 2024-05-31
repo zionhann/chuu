@@ -56,7 +56,7 @@ class SolutionService(
             solution.sourceFiles.forEach { sourceFile ->
                 val file = File(sourceFile.pathname)
                 val sourceCode = file.readText()
-                val modifiedCode = activateScannerInput(sourceCode, className)
+                val modifiedCode = standardizeScannerInput(sourceCode, className)
                 val finalCode = if (sourceFile == mainSourceFile) declareGlobalScanner(modifiedCode) else modifiedCode
 
                 file.writeText(finalCode)
@@ -71,20 +71,15 @@ class SolutionService(
     }
 
     private fun invalidateScannerDecl(file: File): Pair<Boolean, String?> {
-        val accessModifier = "((public|protected|private|static|final)\\s+)?"
-        val regex =
-            accessModifier
-                .repeat(3)
-                .plus("Scanner\\s+(\\w+)\\s*=\\s*new\\s+Scanner\\(.*\\)")
-                .toRegex()
+        val regex = ".*Scanner\\s+(\\w+)\\s*=\\s*new\\s+Scanner\\(.*\\)".toRegex()
         val src = file.readText()
 
         regex
-            .replace(src) { "/// [Auto-commented] ".plus(it.value) }
+            .replace(src) { "/// [Auto-commented]".plus(it.value) }
             .apply(file::writeText)
 
         val isScannerFound = regex.containsMatchIn(src)
-        val scannerName = regex.find(src)?.groupValues?.get(7)
+        val scannerName = regex.find(src)?.groupValues?.get(1)
         return isScannerFound to scannerName
     }
 
@@ -95,17 +90,17 @@ class SolutionService(
         val src = file.readText()
         if (scannerName.isNullOrEmpty()) return src
 
-        return "\\b$scannerName\\.\\w+\\(.*\\)"
+        return ".*\\b$scannerName\\.(?!((has)?[Nn]ext))\\w*\\(.*\\)"
             .toRegex()
-            .replace(src) { "/// [Auto-commented] ".plus(it.value) }
+            .replace(src) { "/// [Auto-commented]".plus(it.value) }
             .apply(file::writeText)
     }
 
-    private fun activateScannerInput(
+    private fun standardizeScannerInput(
         src: String,
         className: String,
     ): String {
-        val regex = "/// \\[Auto-commented] \\w+\\.((has)?[Nn]ext\\w*\\(\\))".toRegex()
+        val regex = "\\b\\w+\\.((has)?[Nn]ext\\w*\\(\\))".toRegex()
         return regex.replace(src) { "$className.STDIN.${it.groupValues[1]}" }
     }
 
