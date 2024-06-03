@@ -75,7 +75,7 @@ class SolutionService(
         val src = file.readText()
 
         regex
-            .replace(src) { "/// [Auto-commented]".plus(it.value) }
+            .replace(src) { "\t/// [Auto-commented] ".plus(it.value.trim()) }
             .apply(file::writeText)
 
         val isScannerFound = regex.containsMatchIn(src)
@@ -92,7 +92,7 @@ class SolutionService(
 
         return ".*\\b$scannerName\\.(?!((has)?[Nn]ext))\\w*\\(.*\\)"
             .toRegex()
-            .replace(src) { "/// [Auto-commented]".plus(it.value) }
+            .replace(src) { "\t/// [Auto-commented] ".plus(it.value.trim()) }
             .apply(file::writeText)
     }
 
@@ -113,7 +113,8 @@ class SolutionService(
 
         return matcher
             .replaceFirst { replacer ->
-                val scannerDeclaration = "static final Scanner STDIN = new Scanner(System.in); /// [Auto-generated]"
+                val scannerDeclaration =
+                    "public static final Scanner STDIN = new Scanner(System.in); /// [Auto-generated]"
 
                 replacer
                     .group()
