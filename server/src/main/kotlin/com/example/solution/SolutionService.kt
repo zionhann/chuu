@@ -136,7 +136,7 @@ class SolutionService(
     }
 
     private fun addScannerImport(src: String): String {
-        val regex = "package\\s+\\w+\\s*;"
+        val regex = "package\\s+(\\.\\w+)*\\s*;"
         return Pattern
             .compile(regex)
             .matcher(src)
